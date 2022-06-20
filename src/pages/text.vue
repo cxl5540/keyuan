@@ -11,19 +11,19 @@
             <span @click="$router.push('/mine')">个人中心></span>
           </div>
           <p>必修课：<span>{{schedule_info.compulsory_credit}}</span>分&nbsp;|&nbsp;选修课：<span>{{schedule_info.elective_credit}}</span>分&nbsp;|&nbsp;总课程数：
-          <span>{{schedule_info.course_count}}</span>门，您还需要学习<span>{{schedule_info.surplus_compulsory_count}}</span>门，至少<span>{{schedule_info.surplus_elective_count}}</span>门选修课</p>
+          <span>{{schedule_info.course_count}}</span>门，您还需要学习<span>{{schedule_info.surplus_compulsory_count}}</span>门必修课，选修课还需<span>{{schedule_info.surplus_elective_count}}</span>分</p>
           <div class="line">
-            <p>时长要求：<span>{{gettime(schedule_info.learn_duration)}}</span>/{{gettime(schedule_info.duration_require)}}</p>
+            <p>时长要求：<span>{{schedule_info.learn_duration?gettime(schedule_info.learn_duration):'00:00:00'}}</span>/{{gettime(schedule_info.duration_require)}}</p>
             <div>
-              <div :style="{width:(schedule_info.learn_duration/schedule_info.duration_require)*100+'%'}"></div>
-              <span>{{((schedule_info.learn_duration/schedule_info.duration_require)*100).toFixed(0)}}%</span>
+              <div :style="{width:(schedule_info.duration_percentage)+'%'}"></div>
+              <span>{{schedule_info.duration_percentage}}%</span>
             </div>
           </div>
           <div class="line">
-            <p>学分要求：<span>{{schedule_info.learn_credit}}</span>/{{schedule_info.credit_require}}</p>
+            <p>学分要求：<span>{{schedule_info.learn_credit?schedule_info.learn_credit:'0'}}</span>/{{schedule_info.credit_require}}</p>
             <div>
-              <div :style="{width:(schedule_info.learn_credit/schedule_info.credit_require)*100+'%'}"></div>
-              <span>{{((schedule_info.learn_credit/schedule_info.credit_require)*100).toFixed(0)}}%</span>
+              <div :style="{width:(schedule_info.credit_percentage)+'%'}"></div>
+              <span>{{schedule_info.credit_percentage}}%</span>
             </div>
           </div>
       </div>
@@ -33,7 +33,7 @@
              <li :class="type==1?'activ':''" @click="choose_type(1)">必修课</li>
              <li :class="type==2?'activ':''" @click="choose_type(2)">选修课</li>
            </ul>
-           <span @click="$router.push('/course_list')">进入学习></span>
+           <span @click="$router.push({path:'/course_list',query:{schedule_id:schedule_info.id}})">进入学习></span>
          </div>
          <div class="list" >
              <div v-for="i,index in course_list" :key='index' @click="course_del(i)">
@@ -45,22 +45,22 @@
                      <p>学分：{{i.learn_status}}</p>
                    </div>
                 </div>
-                <img v-show="i.wc==1" src='../assets/icon_kcxx_b.png'/>
-               <img  v-show="i.wc==2" src='../assets/icon_kcxx_s .png' />
+                <img v-show="i.learn_status==1" src='../assets/icon_kcxx_b.png'/>
+               <img  v-show="i.learn_status==2" src='../assets/icon_kcxx_s .png' />
              </div>
          </div>
       </div>
       <div class="sourse">
           <div class="title">
             <span>知识资源库</span>
-            <span @click="$router.push('/knowledge_list')">MORE+</span>
+            <span @click="$router.push({path:'/knowledge_list',query:{schedule_id:schedule_info.id}})">MORE+</span>
           </div>
-          <div class="list" @click="$router.push('/knowledge_del')">
-            <div  v-for="i,index in resource_list" :key='index'>
+          <div class="list" >
+            <div  v-for="i,index in resource_list" :key='index' @click="knowledge_del(i)">
                 <div :style="{backgroundImage:'url('+baseUrl+i.cover+')'}"></div>
                 <div>
-                  <p>{{getstr(i.title,15)}}</p>
-                  <p>{{getstr(i.introduce,18)}}</p>
+                  <p>{{getstr(i.title,13)}}</p>
+                  <p>{{getstr(i.introduce,15)}}</p>
                   <p>分类：{{i.classify_name}}</p>
                 </div>
             </div>
@@ -73,15 +73,15 @@
     </div>
     <div class="jz">
         <div class="list main">
-           <div>
+           <div v-for="i,index in safe_knowledge_list" :key='index' @click="safe_knowledge_del(i.jump_link)">
               <div class="top">
-                <div></div>
+                <div :style="{backgroundImage:'url('+baseUrl+i.cover+')'}"></div>
                 <div>
-                  <p>知识讲座名称</p>
-                  <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+                  <p><span v-if="i.is_playback==true">回放</span>{{getstr(i.name,15)}}</p>
+                  <p><img src="../assets/icon_time.png" alt=""><span>{{i.lecture_time}} {{i.start_time}}~{{i.end_start}}</span></p>
                 </div>
               </div>
-              <div class="bot">知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字...</div>
+              <div class="bot">{{i.brief}}</div>
            </div>
         </div>
     </div>
@@ -90,20 +90,20 @@
         <span style="border-left: 0.08rem solid #6DC6F9;">有奖征文</span>
         <span style="color:#6DC6F9;" @click="$router.push('/solicitation')">MORE+</span>
       </div>
-      <div class="content" @click="$router.push('/solicitation_del')">
+      <div class="content" @click="$router.push({path:'/solicitation_del',query:{id:prize_essay_list[0].id}} )">
         <div>
-          <img src="../assets/home_yh_4.png" alt="">
-          <span>已结束</span>
+          <img :src="baseUrl+prize_essay_list[0].cover" alt="">
+          <span :style="{background:baseUrl+prize_essay_list[0].label==2?'#FFAF24':baseUrl+prize_essay_list[0].label==3?'#6DC6F9':'#DCDCDC '}" v-if="prize_essay_list[0].label!==1">{{prize_essay_list[0].label==2?'报名中':prize_essay_list[0].label==3?'审评中':'已结束'}}</span>
         </div>
         <div>
-          <p>有奖征文题目有奖征文题目有奖征文题目</p>
-          <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+          <p>{{prize_essay_list[0].name}}</p>
+          <p><img src="../assets/icon_time.png" alt=""><span>{{prize_essay_list[0].enroll_start_time}}~{{prize_essay_list[0].publish_time}}</span></p>
         </div>
       </div>
       <div class="list">
-          <div>
-            <p><span>报名中</span><span>有奖征文题目有奖征文题目有奖征文题目</span></p>
-            <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+          <div v-for="i,index in prize_essay_list.slice(1)" @click="$router.push({path:'/solicitation_del',query:{id:i.id}} )">
+            <p><span :style="{background:i.label==2?'#FFAF24':i.label==3?'#6DC6F9':'#DCDCDC '}" v-if="i.label!==1" >{{i.label==2?'报名中':i.label==3?'审评中':'已结束'}}</span><span>{{i.name}}</span></p>
+            <p><img src="../assets/icon_time.png" alt=""><span>{{i.enroll_start_time}}~{{i.publish_time}}</span></p>
           </div>
       </div>
     </div>
@@ -132,6 +132,10 @@ export default {
       course_list:'',
       resource_list:'',
       schedule_info:'',
+      safe_knowledge_list:'',
+      prize_essay_list:[
+        {cover:'',label:'',name:'',enroll_start_time:'',publish_time:'',id:''}
+      ],
       scrollTop:0,
       topShow:false,
       type:1
@@ -144,44 +148,31 @@ export default {
   },
   mounted() {
     this.getdata()
-    window.addEventListener("scroll", this.scrollToTop);
   },
   destroyed() {
       window.removeEventListener("scroll", this.scrollToTop); //移除滚动条监听
     },
   methods:{
     getdata(){
-       var data={
-              user_id:1,
-              type:this.type
-         }
-        getdataAPI(data).then(res =>{
-          this.schedule_info=res.data.schedule_info;
-          this.course_list=res.data.course_list;
-          this.resource_list=res.data.resource_list;
-
-          }).catch(err =>{
-              console.log(err)
-          })
-
-
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
       // return false;
-      // var url=this.baseUrl+'technical_college/api/Index/apppost';
-      // var data={
-      // 			 action:'SafeKnowledge/index',
-      //        user_id:1,
-      //        type:1
-      //   }
-      //   $.post(url,data,function(res){
-      //   			 if(res.code==200){
-      //   			console.log(res)
-      //            this.schedule_info=res.data.schedule_info;
-      //            this.course_list=res.data.course_list;
-      //            console.log(this.course_list)
-      //            this.resource_list=res.data.resource_list;
-
-      //   			 }
-      //     });
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/index',
+             user_id:1,
+             type:this.type
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+              _this.$toast.clear();
+        			 if(res.code==200){
+        			_this.schedule_info=res.data.schedule_info;
+        			_this.course_list=res.data.course_list;
+        			_this.resource_list=res.data.resource_list;
+              _this.safe_knowledge_list=res.data.safe_knowledge_list;
+              _this.prize_essay_list=res.data.prize_essay_list;
+        			 }
+          });
     },
     choose_type(type){
       this.type=type;
@@ -213,10 +204,14 @@ export default {
        },16);
 
     },
-
-    course_del(i){
-      var item=JSON.stringify(i);
-      this.$router.push({path:'/course_del',query:{i:item}})
+    safe_knowledge_del(url){  //讲座详情
+      window.open(url)
+    },
+    course_del(i){  //课程详情
+      this.$router.push({path:'/course_del',query:{course_id:i.id,type:this.type,schedule_id:this.schedule_info.id}})
+    },
+    knowledge_del(i){  //知识库详情
+       this.$router.push({path:'/knowledge_del',query:{course_id:i.id,schedule_id:this.schedule_info.id}})
     }
   }
 }
@@ -372,6 +367,7 @@ export default {
       >div:nth-child(2){
         position: relative;
         width: 4.6rem;
+        margin-left: 0.2rem;
         >p:nth-child(2){
           color: #666666;
           font-size: 0.24rem;
@@ -412,8 +408,20 @@ export default {
         }
         >div:nth-child(2){
           margin-left: 0.2rem;
+          width: 5rem;
           >p:nth-child(1){
                margin-bottom: 0.2rem;
+               >span{
+                 display: inline-block;
+                 text-align: center;
+                 line-height: 0.36rem;
+                 width: 0.96rem;
+                 height: 0.36rem;
+                 background:#FFAF24;
+                 border-radius:4px;
+                 color: #fff;
+                 font-size: 0.24rem;
+               }
           }
           >p{
             font-size: 0.24rem;

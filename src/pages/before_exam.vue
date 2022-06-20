@@ -23,7 +23,7 @@ export default {
   name: '',
   data () {
     return {
-
+      info:''
     }
   },
   created() {
@@ -34,17 +34,34 @@ export default {
   },
   methods:{
     getinfo(){
+        // var data={
+        //     exam_id:1,
+        //   }
+        //  exam_infoAPI(data).then(res =>{
+        //    if(res.code==200){
+        //      this.info=res.data;
+        //    }
+
+        //    }).catch(err =>{
+        //        console.log(err)
+        //    })
+
+        this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+        var url=this.baseUrl+'api/Index/apppost';
         var data={
             exam_id:1,
+            action:'Exam/exam_info'
           }
-         exam_infoAPI(data).then(res =>{
-           this.info=res.data
-           }).catch(err =>{
-               console.log(err)
-           })
+          let _this=this;
+          $.post(url,data,function(res){
+            _this.$toast.clear();
+          			 if(res.code==200){
+          			 _this.info=res.data;
+          			}
+            });
     },
     start(){
-      this.$router.push('/examination')
+      this.$router.push({path:'/examination'})
     }
   }
 }

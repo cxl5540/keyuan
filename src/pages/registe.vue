@@ -2,17 +2,18 @@
   <div class="meg">
     <div class="main mes_p">
       <p>个人信息</p>
-      <p><span>学院名称</span><span>冶金与材料工程学院</span></p>
-      <p><span>专业班级</span><span>材料科学与工程专业1班</span></p>
-      <p><span>学号</span><span>2022042112345</span></p>
-      <p><span>姓名</span><span>张三</span></p>
+      <p><span>部门</span><span>{{info.department}}</span></p>
+      <p><span>学号</span><span>{{info.student_id}}</span></p>
+      <p><span>姓名</span><span>{{info.name}}</span></p>
     </div>
     <div class="pics">
         <div class="main">
-          <p><span>附件上传</span><img src="../assets/icon_tianjia.png" alt="" @click="handleSubmit"></p>
+          <p><span>附件上传</span><img v-show="!file" src="../assets/icon_tianjia.png" alt="" @click="handleSubmit"></p>
           <div>
-            <p><img src="../assets/icon_pdf.png" alt=""><span>dashdihsa</span><img src="../assets/icon_guanbi.png" alt=""></p>
-            <p><img src="../assets/icon_pdf.png" alt=""><span>dashdihsa</span><img src="../assets/icon_guanbi.png" alt=""></p>
+            <p v-if="file">
+              <img v-if="ext=='pdf'" src="../assets/icon_pdf.png" alt="">
+              <img v-else="ext!=='pdf'" src="../assets/icon_word.png"/>
+             <span>{{file.name}}</span><img src="../assets/icon_guanbi.png" alt="" @click="colse()"></p>
           </div>
         </div>
     </div>
@@ -20,7 +21,7 @@
       <button @click="$router.go(-1)">返回</button>
       <button @click="result()">提交</button>
     </div>
-    <input type="file" accept="application/msword"
+    <input type="file" accept="application/pdf,application/doc,application/docx"
       style="display:none"
       @change="changeImage($event)"
       ref="Input">
@@ -32,11 +33,13 @@ export default {
   name: '',
   data () {
     return {
-
+      info:'',
+      file:'',
+      ext:''
     }
   },
   created() {
-
+    this.info=JSON.parse(localStorage.getItem('info'))
   },
   mounted() {
 
@@ -45,21 +48,52 @@ export default {
     handleSubmit(){
       this.$refs.Input.click()
     },
+    colse(){
+      this.file='';
+    },
     changeImage(e) {
       // 画像对象
       let that = this
       // 文件对象
       const file = e.target.files[0]
+      that.file=file;
+       var index = file.name.lastIndexOf(".");
+       var ext = file.name.substr(index+1);
+       that.ext=ext;
       //var reader = new FileReader();
-      console.log(file)
-      // reader.onload = function(e){
-      // 	// 文件的 base64
-      //   that.dataURL = e.target.result
-      //   that.dataURL = that.dataURL.replace(/^data:\w+\/\w+;base64,/, '')
-      //   // base64 to base64url
-      //   that.dataURL = Base64.fromUint8Array(Base64.toUint8Array(that.dataURL), true);
-      // }
-      // reader.readAsDataURL(file);
+    },
+    result(){
+      if(!this.file){
+         this.$toast('请上传附件');
+         return false;
+      }
+       this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+       let that = this
+       var formData = new FormData();
+       formData.append("files",that.file);
+       formData.append("action",'SafeKnowledge/prize_essay_enroll');
+       formData.append("essay_id",that.info.id);
+       formData.append("user_id",localStorage.getItem('uid'));
+        $.ajax({
+             url:that.baseUrl+'api/Index/apppost',
+             type:'POST',
+             data:formData,
+             cache: false,
+             contentType: false,    //不可缺
+             processData: false,    //不可缺
+             mimeType:"multipart/form-data",
+             success:function(res){
+                that.$toast.clear();
+               var res=JSON.parse(res)
+               if(res.code==200){
+                 that.$toast(res.msg);
+                 that.$router.push('/solicitation')
+               }else{
+                that.$toast(res.msg);
+               }
+               console.log(res)
+             } ,
+           })
     }
   }
 }

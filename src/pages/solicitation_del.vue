@@ -2,42 +2,27 @@
   <div>
     <div class="content">
       <div>
-        <img src="../assets/home_yh_4.png" alt="">
-        <span>已结束</span>
+        <img :src="baseUrl+prize_essay_detail.cover" alt="">
+        <span  v-if="prize_essay_detail.label!==1" :style="{background:prize_essay_detail.label==2?'#FFAF24':prize_essay_detail.label==3?'#6DC6F9':'#DCDCDC '}">{{prize_essay_detail.label==2?'报名中':prize_essay_detail.label==3?'审评中':'已结束'}}</span>
       </div>
       <div>
-        <p>有奖征文题目有奖征文题目有奖征文题目</p>
-        <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+        <p>{{prize_essay_detail.name}}</p>
+        <p><img src="../assets/icon_time.png" alt=""><span>{{prize_essay_detail.enroll_start_time}}~{{prize_essay_detail.publish_time}}</span></p>
       </div>
     </div>
     <div class="main">
         <div class="lc">
-          <button class="active">报名中</button>
+          <button :class="prize_essay_detail.label==2?'active':''">报名中</button>
           <span></span>
-          <button>审核中</button>
+          <button :class="prize_essay_detail.label==3?'active':''">审核中</button>
           <span></span>
-          <button>结果公示</button>
+          <button :class="prize_essay_detail.label==4?'active':''">结果公示</button>
         </div>
         <div class="text">
-            <div>
-              <h3>征文报名时间：</h3>
-              <div>
-                报名时间：2022.04.20~2022.04.30
-              </div>
+            <div v-html="prize_essay_detail.content">
+
             </div>
-            <div>
-              <h3>征文内容及格式：</h3>
-              <div>
-                征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文内容及格式征文<br>
-              </div>
-            </div>
-            <div>
-              <h3>评审方式及联系方式：</h3>
-              <div>
-                审方式介绍评审方式介绍评审方式介绍
-              </div>
-            </div>
-            <div id="result">
+            <div id="result" v-if="prize_essay_detail.result_publish" v-html="prize_essay_detail.result_publish">
               <h3>结果公示：</h3>
               <div>
                 结果公示<br>
@@ -48,9 +33,9 @@
               </div>
             </div>
         </div>
-        <button @click="$router.push('/registe')">点击报名</button>
+        <button @click="$router.push('/registe')" v-if="prize_essay_detail.label==2">点击报名</button>
     </div>
-    <div class="ckjg" @click="goAnchor('result')">
+    <div class="ckjg" @click="goAnchor('result')"  v-if="prize_essay_detail.result_publish" >
       <p>查<br>看<br>结<br>果</p>
       <img src="../assets/icon_ckjg.png" alt="">
     </div>
@@ -63,16 +48,31 @@ export default {
   name: '',
   data () {
     return {
-
+      prize_essay_detail:{}
     }
   },
   created() {
-
+    this.getdata()
   },
   mounted() {
 
   },
   methods:{
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/prize_essay_detail',
+              essay_id:this.$route.query.id,
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                _this.$toast.clear();
+                _this.prize_essay_detail=res.data.prize_essay_detail;
+        			 }
+          });
+    },
     goAnchor() {//参数selector是id选择器（#anchor14）
         document.querySelector('#result').scrollIntoView({
             behavior: "smooth"

@@ -16,22 +16,23 @@
               </div>
             </div>
             <div class="ks">
-              <p>必修课：<span>40</span>分&nbsp;|&nbsp;选修课：<span>40</span>分&nbsp;|&nbsp;总课程数：<span>40</span>门，您还需要学习<span>40</span>门，至少<span>40</span>门选修课</p>
+              <p>必修课：<span>{{schedule_info.compulsory_credit}}</span>分&nbsp;|&nbsp;选修课：<span>{{schedule_info.elective_credit}}</span>分&nbsp;|&nbsp;
+              总课程数：<span>{{schedule_info.course_count}}</span>门，您还需要学习<span>{{schedule_info.surplus_compulsory_count}}</span>门必修课，选修课还需<span>{{schedule_info.surplus_elective_count}}分</span></p>
               <div class="line">
-                <p>时长要求：<span>17:28:00</span>/17:28:00</p>
+                <p>时长要求：<span>{{schedule_info.learn_duration?gettime(schedule_info.learn_duration):'00:00:00'}}</span>/{{gettime(schedule_info.duration_require)}}</p>
                 <div>
-                  <div></div>
-                  <span>60%</span>
+                  <div  :style="{width:(schedule_info.duration_percentage)+'%'}"></div>
+                  <span>{{schedule_info.duration_percentage}}%</span>
                 </div>
               </div>
               <div class="line">
-                <p>学分要求：<span>30</span>/50</p>
+                <p>学分要求：<span>{{schedule_info.learn_credit?schedule_info.learn_credit:'0'}}</span>/{{schedule_info.credit_require}}</p>
                 <div>
-                  <div></div>
-                  <span>60%</span>
+                  <div :style="{width:(schedule_info.credit_percentage)+'%'}"></div>
+                  <span>{{schedule_info.credit_percentage}}%</span>
                 </div>
               </div>
-              <button @click="$router.push('/course_list')">进入学习</button>
+              <button @click="$router.push({path:'/course_list',query:{schedule_id:schedule_info.id}})">进入学习</button>
             </div>
           </div>
           <div class="list">
@@ -49,16 +50,32 @@ export default {
   name: '',
   data () {
     return {
+        schedule_info:{},
         list:[{ name:'安全课程学习',sty:'#FFAF24',url:'/course'},{ name:'学时学分记录',sty:'#76D2B4',url:'/credit_record'},{ name:'考试记录',sty:'#6DC6F9',url:'/exam_record'},{ name:'征文报名记录',sty:'#FF847F',url:'/regist_record'}]
     }
   },
   created() {
-
+    this.getdata()
   },
   mounted() {
 
   },
   methods:{
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/personal',
+              user_id:1,
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                _this.$toast.clear();
+                _this.schedule_info=res.data.schedule_info;
+        			 }
+          });
+    },
     goindex(){
       this.$router.push('/')
     },

@@ -8,7 +8,7 @@
           <div class="lt" @click="show = true">{{year}}<img src="../assets/icon_sxuan.png" alt=""></div>
           <div class="rt">
              <input type="" v-model="key" placeholder="请输入关键词"/>
-             <img src="../assets/sousuo_fen.png" alt="">
+             <img src="../assets/sousuo_fen.png" alt="" @click="search()">
           </div>
       </div>
      <van-popup v-model="show"  position="bottom">
@@ -28,15 +28,15 @@
           @load="onLoad"
         >
          <div class="list">
-            <div>
+            <div v-for="i,index in list" :key='index'  @click="safe_knowledge_del(i.jump_link)">
                <div class="top">
-                 <div></div>
+                 <div :style="{backgroundImage:'url('+baseUrl+i.cover+')'}"></div>
                  <div>
-                   <p><span>回放</span>知识讲座名称</p>
-                   <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+                   <p><span v-if="i.is_playback==true">回放</span>{{getstr(i.name,15)}}</p>
+                   <p><img src="../assets/icon_time.png" alt=""><span>{{i.lecture_time}} {{i.start_time}}~{{i.end_start}}</span></p>
                  </div>
                </div>
-               <div class="bot">知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字...</div>
+               <div class="bot">{{i.brief}}</div>
             </div>
          </div>
         </van-list>
@@ -53,10 +53,12 @@ export default {
       show:false,
       columns: [],
       key: '',
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list:[],
       loading: false,
       finished: true,
       refreshing: false,
+      page:1,
+      pages:'',
     }
   },
   created() {
@@ -66,6 +68,33 @@ export default {
 
   },
   methods:{
+    getlist(year){
+     // this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/safe_knowledge_list',
+              year:year.substring(0,year.length-1),
+              key:this.key,
+              page:this.page,
+              limit:10
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                 _this.loading = false;
+                   _this.page++
+                  _this.pages=res.data.pages;
+                 var li=res.data.safe_knowledge_list;
+                //_this.$toast.clear();
+        			for(var i=0;i<li.length;i++){
+        			    _this.list.push(li[i]);
+        			}
+        			if (li.length<10) {
+        			  _this.finished = true;
+        			 }
+        		}
+          });
+    },
     getdate(){
       var nowTime = new Date();
       let year = nowTime.getFullYear();
@@ -73,15 +102,18 @@ export default {
         this.columns.push(i+'年')
       }
         this.year=this.columns[0];
+       this.getlist(this.year);
     },
-    study(){
-      this.$router.push('/course_list')
+    search(){  //搜索
+      this.page=1;
+      this.refreshing = false;
+       this.loading = true;
+       this.finished=false;
+      this.list=[];
+      this.getlist(this.year)
     },
-    see_certificate(){
-       this.$router.push('/certificate')
-    },
-    todetail(){
-      this.$router.push('/knowledge_del')
+    safe_knowledge_del(url){  //讲座详情
+      window.open(url)
     },
     onConfirm(val){
       this.year=val;
@@ -91,10 +123,17 @@ export default {
       this.show=false;
     },
     onLoad(){
-
+      setTimeout(() => {
+         this.getlist()
+      },1000);
     },
     onRefresh(){
-
+      this.page=1;
+      this.refreshing = false;
+       this.loading = true;
+       this.finished=false;
+      this.list=[];
+      this.getlist(this.year);
     }
   }
 }
@@ -185,6 +224,7 @@ export default {
         }
         >div:nth-child(2){
           margin-left: 0.2rem;
+          width: 5rem;
           >p:nth-child(1){
                margin-bottom: 0.2rem;
                >span{

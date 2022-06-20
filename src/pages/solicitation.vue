@@ -8,7 +8,7 @@
           <!-- <div class="lt" @click="show = true">{{type}}<img src="../assets/icon_sxuan.png" alt=""></div> -->
           <div class="rt">
              <input type="" v-model="key" placeholder="请输入关键词"/>
-             <img src="../assets/sousuo_lan.png" alt="">
+             <img src="../assets/sousuo_lan.png" alt="" @click="search()">
           </div>
       </div>
       <!-- <van-action-sheet v-model="show" :actions="actions" @select="onSelect" /> -->
@@ -20,14 +20,14 @@
           @load="onLoad"
         >
           <div class="list">
-              <div class="content" @click="detail()">
+              <div class="content" v-for="i,index in list" :key='index'  @click="detail(i.id)">
                 <div>
-                  <img src="../assets/home_yh_4.png" alt="">
-                  <span>已结束</span>
+                  <img :src="baseUrl+i.cover" alt="">
+                  <span v-if="i.label!==1" :style="{background:i.label==2?'#FFAF24':i.label==3?'#6DC6F9':'#DCDCDC '}">{{i.label==2?'报名中':i.label==3?'审评中':'已结束'}}</span>
                 </div>
                 <div>
-                  <p>有奖征文题目有奖征文题目有奖征文题目</p>
-                  <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+                  <p>{{i.name}}</p>
+                  <p><img src="../assets/icon_time.png" alt=""><span>{{i.enroll_start_time}}~{{i.publish_time}}</span></p>
                 </div>
               </div>
           </div>
@@ -45,10 +45,12 @@ export default {
       show:false,
       actions: [{ name: '全部' }, { name: '国家安全' }, { name: '消防交通' }],
       key: '',
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list: [],
       loading: false,
-      finished: true,
+      finished: false,
       refreshing: false,
+      page:1,
+      pages:'',
     }
   },
   created() {
@@ -58,16 +60,55 @@ export default {
 
   },
   methods:{
-    detail(){
-      this.$router.push('/solicitation_del')
+    getlist(){
+      //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/prize_essay_list',
+              key:this.key,
+              page:this.page,
+              limit:10
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.loading = false;
+                   _this.page++
+                _this.pages=res.data.pages;
+                var li=res.data.prize_essay_list;
+                for(var i=0;i<li.length;i++){
+                    _this.list.push(li[i]);
+                }
+                if (li.length<10) {
+                  _this.finished = true;
+                 }
+        		}
+          });
     },
-    
-    onLoad(){
-
+    detail(id){
+      this.$router.push({path:'/solicitation_del',query:{id:id}} )
     },
-    onRefresh(){
-
-    }
+    search(){  //搜索
+      this.page=1;
+      this.refreshing = false;
+       this.loading = true;
+       this.finished=false;
+      this.list=[];
+      this.getlist()
+    },
+   onLoad(){
+     setTimeout(() => {
+        this.getlist()
+     },1000);
+   },
+   onRefresh(){
+     this.page=1;
+     this.refreshing = false;
+      this.loading = true;
+      this.finished=false;
+     this.list=[];
+     this.getlist();
+   }
   }
 }
 </script>

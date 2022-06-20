@@ -3,7 +3,7 @@
       <div class="login">
         <div>
           <img src="../assets/icon_login.png" alt="">
-          <span>张三 | <span style="color: #117EBC;">退登</span></span>
+          <span>张三 | <span style="color: #117EBC;" @click="esc()">退登</span></span>
         </div>
         <div class="mes" @click="$router.push('/message_report')">
            <img src="../assets/icon_tongzhi.png" alt="">
@@ -51,7 +51,9 @@ export default {
 
   },
   methods:{
-
+    esc(){
+      localStorage.clear('uid')
+    }
   }
 }
 </script>

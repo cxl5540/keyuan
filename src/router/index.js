@@ -28,9 +28,10 @@ import report_list from '@/pages/report_list'
 import report_del from '@/pages/report_del'
 import special_activ from '@/pages/special_activ'
 import special_activ_del from '@/pages/special_activ_del'
-import report_deal from '@/pages/report_deal'  
+import report_deal from '@/pages/report_deal'
 import deal from '@/pages/deal'
 import choose_p from '@/pages/choose_p'
+import login from '@/pages/login'
 Vue.use(Router)
 
 export default new Router({
@@ -56,7 +57,8 @@ export default new Router({
     },{
       path: '/course',
       name: 'course',
-      component:course
+      component:course,
+      meta:{ keepAlive:true}
     },{
       path: '/course_list',
       name: 'course_list',
@@ -72,7 +74,8 @@ export default new Router({
     },{
       path: '/knowledge_list',
       name: 'knowledge_list',
-      component:knowledge_list
+      component:knowledge_list,
+      meta:{ keepAlive:true}
     },{
       path: '/knowledge_del',
       name: 'knowledge_del',
@@ -80,11 +83,13 @@ export default new Router({
     },{
       path: '/knowledge_lecture',
       name: 'knowledge_lecture',
-      component:knowledge_lecture
+      component:knowledge_lecture,
+      meta:{ keepAlive:true}
     },{
       path: '/solicitation',
       name: 'solicitation',
-      component:solicitation
+      component:solicitation,
+      meta:{ keepAlive:true}
     },{
       path: '/solicitation_del',
       name: 'solicitation_del',
@@ -92,11 +97,13 @@ export default new Router({
     },{
       path: '/before_exam',
       name: 'before_exam',
-      component:before_exam
+      component:before_exam,
+      meta:{ keepAlive:true}
     },{
       path: '/examination',
       name: 'examination',
-      component:examination
+      component:examination,
+      // meta:{ keepAlive:true}
     },{
       path: '/after_exam',
       name: 'after_exam',
@@ -112,7 +119,8 @@ export default new Router({
     },{
       path: '/exam_record',
       name: 'exam_record',
-      component:exam_record
+      component:exam_record,
+      meta:{ keepAlive:true}
     },{
       path: '/regist_record',
       name: 'regist_record',
@@ -165,6 +173,10 @@ export default new Router({
       path: '/choose_p',
       name: 'choose_p',
       component:choose_p
+    },{
+      path: '/login',
+      name: 'login',
+      component:login
     }
   ]
 })

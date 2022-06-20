@@ -1,15 +1,15 @@
 import axios from 'axios';
 import {Toast} from 'vant'
 const service = axios.create({
-    baseURL:process.env.BASE_URL,
+   // baseURL:process.env.BASE_URL,
     timeout:10000
 })
 //请求拦截器
 service.interceptors.request.use(function(config){
-       Toast.loading({
-         message: '加载中...',
-         forbidClick: true,
-       });//显示loading
+       // Toast.loading({
+       //   message: '加载中...',
+       //   forbidClick: true,
+       // });//显示loading
     config.data = config.data;  //根据后端数据格式，可做相应的数据转换 JSON.stringify() 或 qs.stringify()
     //设置header的配置信息，跟后端配合设置
     config.headers = {

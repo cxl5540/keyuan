@@ -12,8 +12,8 @@ fontSize()
 window.onresize = function () {
 fontSize()
 }
- Vue.prototype.baseUrl = "http://192.168.3.43/" ;
-
+Vue.prototype.baseUrl = "http://192.168.3.43/technical_college/" ;
+  //Vue.prototype.baseUrl = "http://glodon.toommi.com/" ;
 function fontSize() {
     var size;
     var winW = $(window).width();
@@ -34,6 +34,22 @@ function fontSize() {
         'font-size': size + 'px'
     })
 }
+router.beforeEach((to, from, next) => {
+  // 处理访问权限
+  if (to.path === '/login') {
+    next()
+  }
+  else {
+   // console.log(to.path)
+    const uid = localStorage.getItem('uid')
+    if (uid) {
+      next()
+    }
+    else {
+      next('/login')
+    }
+  }
+})
 
  Vue.prototype.gettime=function(sec){
      if(!sec){

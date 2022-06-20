@@ -1,15 +1,14 @@
 <template>
   <div class="main">
-      <p> <span @click="$router.push('/text')">首页</span> > <span @click="$router.go(-1)">知识资源库列表页</span> > 资源库详情</p>
-      <p><!-- <span>必修</span> -->安全课程学习标题安全课程学习标题安全课程学 习标题安全课程学习标题</p>
-      <p>课程时长：<span>1:00:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><!-- 课程学分：<span>2</span> --></p>
+      <p> <span @click="$router.push('/text')">首页</span> > <span @click="$router.go(-1)">安全课程列表页</span> > 课程详情</p>
+      <p>{{course_detail.title}}</p>
+      <p>课程时长：<span>{{gettime(course_detail.duration)}}</span></p>
       <div class="video">
-           <video src="../../static/video/video1.mp4" controls></video>
+          <video   id="video" src="../../static/video/video2.mp4" controls :poster="baseUrl+course_detail.cover"></video>
           <p>
             <span>课程介绍</span>
           </p>
-          <div>
-            课程内容大纲介绍课程内容大纲介绍课程内容大纲介绍课程内容大纲介绍课程内容大纲介绍课程内容大纲介绍课程内容大纲介绍
+          <div v-html="course_detail.introduce">
           </div>
       </div>
   </div>
@@ -20,17 +19,38 @@ export default {
   name: '',
   data () {
     return {
-
+      course_id:'',
+      course_detail:'',
+      schedule_id:'',
     }
   },
   created() {
-
+    this.course_id=this.$route.query.course_id;
+    this.schedule_id=this.$route.query.schedule_id;
+    if(this.$route.query.type){
+      this.type=this.$route.query.type;
+    }
+    this.getdata();
   },
   mounted() {
-
+    window.addEventListener("scroll", this.scrollToTop);
   },
   methods:{
-
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/course_detail',
+              course_id:this.course_id
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+             _this.$toast.clear();
+        			 if(res.code==200){
+        			_this.course_detail=res.data.course_detail;
+        			}
+          });
+    },
   }
 }
 </script>
@@ -55,7 +75,8 @@ export default {
       width: 0.6rem;
       line-height: 0.32rem;
       height: 0.32rem;
-      font-size: 12px;  text-align: center;
+      font-size: 12px;
+      text-align: center;
       margin-right: 0.1rem;
       color: #FFffff;
     }

@@ -6,31 +6,32 @@
           <span @click="$router.go(-1)">返回></span>
       </div>
       <div class="top" v-show="show==true">
-          <p>必修课：<span>40</span>分&nbsp;|&nbsp;选修课：<span>40</span>分&nbsp;|&nbsp;总课程数：<span>40</span>门，您还需要学习<span>40</span>门，至少<span>40</span>门选修课</p>
+          <p>必修课：<span>{{schedule_info.compulsory_credit}}</span>分&nbsp;|&nbsp;选修课：<span>{{schedule_info.elective_credit}}</span>分&nbsp;|&nbsp;
+          总课程数：<span>{{schedule_info.course_count}}</span>门，您还需要学习<span>{{schedule_info.surplus_compulsory_count}}</span>门，至少<span>{{schedule_info.surplus_elective_count}}</span>门选修课</p>
           <div class="line">
-            <p>时长要求：<span>17:28:00</span>/17:28:00</p>
+           <p>时长要求：<span>{{schedule_info.learn_duration?gettime(schedule_info.learn_duration):'00:00:00'}}</span>/{{gettime(schedule_info.duration_require)}}</p>
             <div>
-              <div></div>
-              <span>60%</span>
+             <div :style="{width:(schedule_info.duration_percentage)+'%'}"></div>
+             <span>{{schedule_info.duration_percentage}}%</span>
             </div>
           </div>
           <div class="line">
-            <p>学分要求：<span>30</span>/50</p>
+            <p>学分要求：<span>{{schedule_info.learn_credit?schedule_info.learn_credit:'0'}}</span>/{{schedule_info.credit_require}}</p>
             <div>
-              <div></div>
-              <span>60%</span>
+              <div :style="{width:(schedule_info.credit_percentage)+'%'}"></div>
+              <span>{{schedule_info.credit_percentage}}%</span>
             </div>
           </div>
       </div>
       <div class="line line1" v-show="show==false">
-        <p>学习进度：</p>
+        <p>学分要求：<span>{{schedule_info.learn_credit?schedule_info.learn_credit:'0'}}</span>/{{schedule_info.credit_require}}</p>
         <div>
-          <div></div>
-          <span>60%</span>
+          <div :style="{width:(schedule_info.credit_percentage)+'%'}"></div>
+          <span>{{schedule_info.credit_percentage}}%</span>
         </div>
       </div>
       <div class="del">
-        {{getstr(str,show==false?40:str.length) }}
+        {{getstr(schedule_info.brief,show==false?40:schedule_info.brief.length) }}
       </div>
     </div>
     <div class="zd">
@@ -49,20 +50,20 @@
           </div>
           <div class="content" v-show="activ!=2">
               <div v-for="i,index in list" :key='index'  @click="course_del(i)">
-                <div :style="{backgroundImage:'url('+i.pic+')'}"></div>
+                <div :style="{backgroundImage:'url('+baseUrl+i.cover+')'}"></div>
                  <div>
-                   <p><span>必修</span><span>{{getstr(i.name,6)}}</span></p>
+                   <p><span>{{type==1?'必修':'选修'}}</span><span>{{getstr(i.title,6)}}</span></p>
                     <div>
-                      <p>时长：{{i.sc}}</p>
-                      <p>学分：{{i.xf}}</p>
+                      <p>时长：{{gettime(i.duration)}}</p>
+                      <p>学分：{{i.learn_status}}</p>
                     </div>
                  </div>
-                 <img v-show="i.wc==1" src='../assets/icon_kcxx_b.png'/>
-                <img  v-show="i.wc==2" src='../assets/icon_kcxx_s .png' />
+                 <img v-show="i.learn_status==1" src='../assets/icon_kcxx_b.png'/>
+                <img  v-show="i.learn_status==2" src='../assets/icon_kcxx_s .png' />
               </div>
           </div>
       </div>
-      <div class="instudy" v-show="activ==2">
+      <div class="instudy" v-show="activ==2" @click="$router.push('/before_exam')">
           <img src="../assets/img_ksrk_1(1).png" alt="">
           <span>已开启</span>
       </div>
@@ -77,30 +78,56 @@ export default {
     return {
       str:'一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍一段文字描述课程介绍',
       show:false,
-      list:[
-        {name:'意识比安全知识更重要',sc:'20:49',xf:"2",wc:1,pic:require('../assets/v1.png'),id:1},
-        {name:'大学生防溺水',sc:'17:09',xf:"2",wc:2,pic:require('../assets/v2.png'),id:2},
-        {name:'国家安全人人有责',sc:'22:18',xf:"2",wc:2,pic:require('../assets/v3.png'),id:3},
-      ],
-       activ:0
+       list:'',
+       activ:0,
+       type:1,
+       schedule_id:'',
+       schedule_info:''
     }
   },
   created() {
-
+    this.schedule_id=this.$route.query.schedule_id;
+    this.getdata()
   },
   mounted() {
 
   },
   methods:{
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      // return false;
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/course_list',
+              user_id:1,
+              type:this.type,
+              schedule_id:this.schedule_id
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                _this.$toast.clear();
+        			_this.schedule_info=res.data.schedule_info;
+        			_this.list=res.data.course_list;
+        			 }
+          });
+    },
+
     getshow(){
       this.show=!this.show
     },
     change(num){
       this.activ=num;
+      if(num==0){
+        this.type=1;
+        this.getdata()
+      }else if(num==1){
+         this.type=2;
+         this.getdata()
+      }
     },
     course_del(i){
-      var item=JSON.stringify(i);
-      this.$router.push({path:'/course_del',query:{i:item}})
+      this.$router.push({path:'/course_del',query:{course_id:i.id,type:this.type,schedule_id:this.schedule_info.id}})
     }
   }
 }
@@ -170,7 +197,7 @@ export default {
   .line1{
     display: flex;
     >div{
-       width: 70%;
+       width: 60%;
     }
   }
 }

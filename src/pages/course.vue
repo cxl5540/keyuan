@@ -14,22 +14,22 @@
          <div class="list">
             <div v-for="i,index in list" :key='index'>
                 <div class="top">
-                    <div></div>
+                    <div :style="{backgroundImage:'url('+baseUrl+i.cover+')'}"></div>
                     <div>
-                      <p>{{i.n}}</p>
-                      <p>{{i.d}}</p>
+                      <p>{{getstr(i.name,15)}}</p>
+                      <p>{{getstr(i.brief,15)}}</p>
                       <div class="line">
                         <span>学习进度:</span>
                         <div>
-                          <div></div>
-                          <span>60%</span>
+                          <div :style="{width:(i.credit_percentage)+'%'}"></div>
+                          <span>{{i.credit_percentage}}%</span>
                         </div>
                       </div>
                     </div>
                 </div>
                 <div class="bot">
                   <button @click="see_certificate()">查看证书</button>
-                  <button @click="study()">进入学习</button>
+                  <button @click="study(i.id)">进入学习</button>
                 </div>
             </div>
          </div>
@@ -43,21 +43,37 @@ export default {
   name: '',
   data () {
     return {
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课件介...'}],
+      list: [],
       loading: false,
       finished: true,
       refreshing: false,
     }
   },
   created() {
-
+    this.getlist()
   },
   mounted() {
 
   },
   methods:{
-    study(){
-      this.$router.push('/course_list')
+    getlist(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      // return false;
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/schedule_list',
+              user_id:1,
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                _this.$toast.clear();
+        		  	_this.list=res.data.schedule_list;
+        			 }
+          });
+    },
+    study(id){
+      this.$router.push({path:'/course_list',query:{schedule_id:id}})
     },
     see_certificate(){
        this.$router.push('/certificate')
@@ -66,7 +82,11 @@ export default {
 
     },
     onRefresh(){
-
+      setTimeout(res=>{
+        this.page=1;
+        this.refreshing = false;
+        this.getlist();
+      },500)
     }
   }
 }

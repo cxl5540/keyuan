@@ -5,18 +5,18 @@
           <span @click="$router.go(-1)">返回></span>
       </div>
       <ul>
-        <li class="activ">必修课</li>
-        <li>选修课</li>
+        <li :class="type==1?'activ':''" @click="choose(1)">必修课</li>
+        <li  :class="type==2?'activ':''" @click="choose(2)">选修课</li>
       </ul>
-      <p>已获得学分：6分 累计学习时长：4:10:00</p>
+      <p>已获得学分：{{learn_credit_count}}分&nbsp;&nbsp;累计学习时长{{gettime(learn_duration_count)}}</p>
       <div class="list">
-          <div v-for="i,index in list" :key='index'>
+          <div v-for="i,index in list" :key='index' @click="course_del(i.course_id)">
               <div>
-                <p>{{i.n}}</p>
-                <p>学习时长：<span>{{i.t}}</span> </p>
+                <p>{{i.course_name}}</p>
+                <p>学习时长：<span>{{gettime(i.learn_duration)}}</span> </p>
               </div>
               <div>
-                <span>{{i.d}}</span> <img src="../assets/icon_enter.png"/>
+                <span>+{{i.learn_credit}}</span> <img src="../assets/icon_enter.png"/>
               </div>
           </div>
       </div>
@@ -28,21 +28,44 @@ export default {
   name: '',
   data () {
     return {
-      list:[
-        {n:'学习课程名称学习课程名称',d:'+2',t:'1:20:00'},
-        {n:'学习课程名称学习课程名称',d:'+2',t:'1:20:00'},
-        {n:'学习课程名称学习课程名称',d:'+2',t:'1:20:00'},
-      ],
+      list:'',
+      type:1,
+      learn_credit_count:'',
+      learn_duration_count:''
     }
   },
   created() {
-
+    this.getdata()
   },
   mounted() {
 
   },
   methods:{
-
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/credit_record_list',
+              user_id:1,
+              type:this.type
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                _this.$toast.clear();
+                _this.list=res.data.learn_list;
+                _this.learn_credit_count=res.data.learn_credit_count;
+                _this.learn_duration_count=res.data.learn_duration_count;
+        			 }
+          });
+    },
+    course_del(course_id){
+      this.$router.push({path:'/course_del',query:{course_id:course_id}})
+    },
+    choose(type){
+      this.type=type;
+      this.getdata()
+    }
   }
 }
 </script>

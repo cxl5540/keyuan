@@ -8,7 +8,7 @@
           <div class="lt" @click="show = true">{{type}}<img src="../assets/icon_sxuan.png" alt=""></div>
           <div class="rt">
              <input type="" v-model="key" placeholder="请输入关键词"/>
-             <img src="../assets/sousuo_lv.png" alt="">
+             <img src="../assets/sousuo_lv.png" alt=""  @click="search()">
           </div>
       </div>
       <van-action-sheet v-model="show" :actions="actions" @select="onSelect" />
@@ -16,16 +16,16 @@
         <van-list
           v-model="loading"
           :finished="finished"
-          finished-text="没有更多了"
+          finished-text="无更多数据"
           @load="onLoad"
         >
          <div class="list">
-           <div @click="todetail()">
-               <div></div>
+           <div v-for="i,index in list" :key='index' @click="todetail(i)">
+               <div :style="{backgroundImage:'url('+baseUrl+i.cover+')'}"></div>
                <div>
-                 <p>知识资源标题</p>
-                 <p>知识资源视频简介知识资源视频简介...</p>
-                 <p>分类：治安</p>
+                 <p>{{getstr(i.title,13)}}</p>
+                  <p>{{getstr(i.introduce,15)}}</p>
+                 <p>分类：{{i.classify_name}}</p>
                </div>
            </div>
          </div>
@@ -41,39 +41,98 @@ export default {
     return {
       type:'全部',
       show:false,
-      actions: [{ name: '全部' }, { name: '国家安全' }, { name: '消防交通' }],
+      actions:[],
       key: '',
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list:[],
       loading: false,
-      finished: true,
+      finished: false,
       refreshing: false,
+      classify_id:'',
+      page:1,
+      pages:'',
+      schedule_info:''
     }
   },
   created() {
-
+    this.schedule_info=this.$route.query.schedule_id;
+    this.get_classify_list()
   },
   mounted() {
-
+    // this.getlist()
   },
   methods:{
-    study(){
-      this.$router.push('/course_list')
+    getlist(){
+      //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/resource_list',
+              classify_id:this.classify_id,
+              key:this.key,
+              page:this.page,
+              limit:10
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.loading = false;
+                   _this.page++
+                //_this.$toast.clear();
+                _this.pages=res.data.pages;
+                var li=res.data.resource_list;
+                for(var i=0;i<li.length;i++){
+                    _this.list.push(li[i]);
+                }
+                if (li.length<10) {
+                  _this.finished = true;
+                 }
+        		}
+        });
     },
-    see_certificate(){
-       this.$router.push('/certificate')
+    get_classify_list(){
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'SafeKnowledge/resource_classify_list',
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                _this.actions=res.data.resource_classify_list;
+                var obj={};
+                obj.id='';obj.name='全部'
+                _this.actions[0]=obj;
+        		}
+          });
+    },
+    search(){  //搜索
+      this.page=1;
+      this.refreshing = false;
+       this.loading = true;
+       this.finished=false;
+      this.list=[];
+      this.getlist()
     },
     onSelect(item){
       this.show = false;
       this.type=item.name;
+      this.classify_id=item.id;
     },
-    todetail(){
-      this.$router.push('/knowledge_del')
+    todetail(i){
+       this.$router.push({path:'/knowledge_del',query:{course_id:i.id,schedule_id:this.schedule_info.id}})
     },
     onLoad(){
-
+       setTimeout(() => {
+         this.getlist()
+      },1000);
     },
     onRefresh(){
-
+      setTimeout(res=>{
+        this.page=1;
+        this.refreshing = false;
+         this.loading = true;
+         this.finished=false;
+        this.list=[];
+        this.getlist();
+      },500)
     }
   }
 }
@@ -151,6 +210,8 @@ export default {
       }
       >div:nth-child(2){
         position: relative;
+        width: 4.5rem;
+        margin-left: 0.2rem;
         >p:nth-child(2){
           color: #666666;
           font-size: 0.24rem;

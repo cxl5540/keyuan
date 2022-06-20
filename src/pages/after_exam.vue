@@ -1,14 +1,14 @@
 <template>
   <div class="exam">
     <img src="../assets/img_kscj.png" alt="">
-    <p class="cords"><span>89</span><span>分</span></p>
+    <p class="cords"><span>{{info.scores}}</span><span>分</span></p>
       <div class="main">
           <div class="c_t">
               <ul>
-                <li>您<span>已通过</span>本次考试，请及时前往个人中心 进行浏览和下载电子证书。</li>
-                <li>单选题：答对<span>37</span>题&nbsp; 答错<span>1</span>题</li>
-                <li>判断题：答对<span>38</span>题&nbsp; 答错<span>1</span>题</li>
-                <li>多选：答对<span>5</span>题&nbsp; 答错<span>5</span>题</li>
+                <li>您<span :style="{'color': info.is_adopt==1?'#2E5638':'red'}">{{info.is_adopt==1?'已通过':'未通过'}}</span>本次考试，请及时前往个人中心 进行浏览和下载电子证书。</li>
+                <li>单选题：答对<span>{{info.dd_count}}</span>题&nbsp; 答错<span>{{info.dc_count}}</span>题</li>
+                <li>判断题：答对<span>{{info.pd_count}}</span>题&nbsp; 答错<span>{{info.pc_count}}</span>题</li>
+                <li>多选：答对<span>{{info.dxd_count}}</span>题&nbsp; 答错<span>{{info.dxc_count}}</span>题</li>
               </ul>
           </div>
           <div class="btns">
@@ -20,20 +20,36 @@
 </template>
 
 <script>
+  import {exam_recordAPI} from '../api/api.js'
 export default {
   name: '',
   data () {
     return {
-
+      info:''
     }
   },
   created() {
-
+    this.getdata()
   },
   mounted() {
-
   },
   methods:{
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+          score_id:this.$route.query.score_id,
+          user_id:1,
+          action:'Exam/exam_record'
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+          _this.$toast.clear();
+        			 if(res.code==200){
+        			_this.info=res.data;
+        			}
+          });
+    },
     start(){
       this.$router.push('/examination')
     }

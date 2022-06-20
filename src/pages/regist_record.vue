@@ -8,16 +8,16 @@
         <van-list
           v-model="loading"
           :finished="finished"
-          finished-text="没有更多了"
+          finished-text="没有更多数据"
           @load="onLoad"
         >
          <div class="list">
-            <div>
+            <div v-for="i,index in list" :key='index'>
                <div class="top">
-                 <div></div>
+                 <div :style="{backgroundImage:'url('+baseUrl+i.prize_essay_detail.cover+')'}"></div>
                  <div>
-                   <p><span>报名中</span> 知识讲座名称知识讲座名称知识讲座名称</p>
-                   <p><img src="../assets/icon_time.png" alt=""><span>2022.04.20 14:00~17:00</span></p>
+                   <p><span v-if="i.prize_essay_detail.label!==1" :style="{background:i.prize_essay_detail.label==2?'#FFAF24':i.prize_essay_detail.label==3?'#6DC6F9':'#DCDCDC '}">{{i.prize_essay_detail.label==2?'报名中':i.prize_essay_detail.label==3?'审评中':'已结束'}}</span> {{i.prize_essay_detail.name}}</p>
+                   <p><img src="../assets/icon_time.png" alt=""><span>{{i.prize_essay_detail.enroll_start_time}}~{{i.prize_essay_detail.publish_time}}</span></p>
                  </div>
                </div>
             </div>
@@ -32,10 +32,12 @@ export default {
   name: '',
   data () {
     return {
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list: [],
       loading: false,
-      finished: true,
+      finished: false,
       refreshing: false,
+      page:1,
+      pages:'',
     }
   },
   created() {
@@ -44,13 +46,44 @@ export default {
 
   },
   methods:{
-
-    onLoad(){
-
-    },
-    onRefresh(){
-
-    }
+  getlist(){
+    //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+    var url=this.baseUrl+'api/Index/apppost';
+    var data={
+          action:'SafeKnowledge/essay_record_list',
+          user_id:localStorage.getItem('uid'),
+          page:this.page,
+          limit:10
+      }
+      let _this=this;
+      $.post(url,data,function(res){
+           if(res.code==200){
+              _this.loading = false;
+               _this.page++
+            _this.pages=res.data.pages;
+            var li=res.data.enroll_list;
+            for(var i=0;i<li.length;i++){
+                _this.list.push(li[i]);
+            }
+            if (li.length<10) {
+              _this.finished = true;
+             }
+        }
+      });
+  },
+   onLoad(){
+     setTimeout(() => {
+        this.getlist()
+     },1000);
+   },
+   onRefresh(){
+     this.page=1;
+     this.refreshing = false;
+     this.loading = true;
+     this.finished=false;
+     this.list=[];
+     this.getlist();
+   }
   }
 }
 </script>
@@ -100,6 +133,7 @@ export default {
         >div:nth-child(2){
           margin-left: 0.2rem;
            position: relative;
+           width: 4.5rem;
           >p:nth-child(1){
             margin-bottom: 0.2rem;
             >span{
