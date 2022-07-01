@@ -39,7 +39,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
           score_id:this.$route.query.score_id,
-          user_id:1,
+          user_id:localStorage.getItem('uid'),
           action:'Exam/exam_record'
         }
         let _this=this;

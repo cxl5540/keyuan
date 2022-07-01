@@ -3,15 +3,15 @@
     <div class=" mes_p">
       <div>
         <div class="main">
-          <p>隐患名称 <span>xxxxx</span> </p>
-          <p>隐患位置 <span>xxxxxxxxxxxxxxxxxxxxx</span></p>
+          <p>隐患名称 <span>{{hidden_detail.name}}</span> </p>
+          <p>隐患位置 <span>{{hidden_detail.position}}</span></p>
         </div>
       </div>
      <div>
        <div  class="main">
           <p>隐患描述</p>
           <div>
-            hdddddddddddj
+            {{hidden_detail.describe}}
           </div>
         </div>
      </div>
@@ -19,9 +19,8 @@
     <div class="pics">
         <div class="main">
           <p><span>附件上传</span></p>
-          <div>
-            <p><img src="../assets/icon_pdf.png" alt=""><span>dashdihsa</span></p>
-            <p><img src="../assets/icon_pdf.png" alt=""><span>dashdihsa</span></p>
+          <div  v-if="hidden_detail.file_path">
+            <p><img src="../assets/icon_tupian.png" alt=""><a :href="baseUrl+hidden_detail.file_path" target="_blank" style="margin-left: 0.2rem;">附件.{{ext}}</a></p>
           </div>
         </div>
     </div>
@@ -34,16 +33,36 @@ export default {
   name: '',
   data () {
     return {
-
+      id:'',
+      hidden_detail:'',
+      ext:''
     }
   },
   created() {
-
+    this.id=this.$route.query.id;
+    this.getdata()
   },
   mounted() {
 
   },
   methods:{
+    getdata(){
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'HiddenReport/hidden_report_see',
+              hidden_id:this.id,
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.hidden_detail=res.data.hidden_detail;
+                  _this.$toast.clear();
+                  var index = _this.hidden_detail.file_path.lastIndexOf(".");
+                  _this.ext = _this.hidden_detail.file_path.substr(index+1);
+        		}
+        });
+    }
 
   }
 }

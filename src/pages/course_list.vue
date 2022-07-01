@@ -63,9 +63,9 @@
               </div>
           </div>
       </div>
-      <div class="instudy" v-show="activ==2" @click="$router.push('/before_exam')">
+      <div class="instudy" v-show="activ==2" @click="toexam()">
           <img src="../assets/img_ksrk_1(1).png" alt="">
-          <span>已开启</span>
+          <span :style="{background:schedule_info.credit_percentage!==100?'#DCDCDC':''}">{{schedule_info.credit_percentage==100?'已开启':'未开启'}}</span>
       </div>
     </div>
   </div>
@@ -99,7 +99,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/course_list',
-              user_id:1,
+              user_id:localStorage.getItem('uid'),
               type:this.type,
               schedule_id:this.schedule_id
         }
@@ -112,11 +112,17 @@ export default {
         			 }
           });
     },
-
+    toexam(){  //考试
+      if(this.schedule_info.credit_percentage!==100){
+        this.$toast('您的学分未达到要求，暂不能考试');
+        return false;
+      }
+      this.$router.push({path:'/before_exam',query:{exam_id:this.schedule_info.id}} )
+    },
     getshow(){
       this.show=!this.show
     },
-    change(num){
+    change(num){  //切换
       this.activ=num;
       if(num==0){
         this.type=1;
@@ -270,8 +276,8 @@ export default {
               background: #FFAF24;
               border-radius: 3px;
               width: 0.6rem;
-              line-height: 0.32rem;
-              height: 0.32rem;
+              //line-height: 0.32rem;
+             // height: 0.32rem;
               font-size: 12px;
                text-align: center;
               margin-right: 0.1rem;

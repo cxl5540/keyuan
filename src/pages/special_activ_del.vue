@@ -4,22 +4,22 @@
           <div class="top">
             <div></div>
             <div>
-              <p>专项排查活动名称</p>
-              <p><img src="../assets/icon_time.png" alt=""><span>活动时间：2022.04.20 14:00~17:00</span></p>
+              <p>{{course_detail.name}}</p>
+              <p><img src="../assets/icon_time.png" alt=""><span>活动时间：{{course_detail.activity_time}}</span></p>
             </div>
           </div>
      </div>
      <div class="del">
         <div class="main">
           <p>活动描述</p>
-          <div>
-            这是一段活动描述文字这是一段活动描述文字这是一段活 这是一段活动描述文字这是一段活动描述文字这是一段活 动描述文字动描述文字 1、这是一段活动描述文字 2、这是一段活动描述文字这是一段活动描述文字这是一 段活动描述文字 3、这是一段活动描述文字这是一段活动描述文字
+          <div v-html="course_detail.brief">
+
           </div>
         </div>
      </div>
      <div class="btns">
        <button @click="$router.go(-1)">返回</button>
-       <button @click="result()">提交</button>
+       <button @click="report()" :style="{background:course_detail.is_open?'':'#ccc'}">进入专题活动</button>
      </div>
   </div>
 </template>
@@ -29,17 +29,37 @@
     name: '',
     data () {
       return {
-
+        course_detail:''
       }
     },
     created() {
-
+      this.getdata()
     },
     mounted() {
 
     },
     methods:{
+      getdata(){
+        this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+        var url=this.baseUrl+'api/Index/apppost';
+        var data={
+                action:'HiddenReport/special_screening_detail',
+                special_id:this.$route.query.id,
+          }
+          let _this=this;
+          $.post(url,data,function(res){
+          			 if(res.code==200){
+                  _this.$toast.clear();
+                  _this.course_detail=res.data.course_detail;
+          			 }
+            });
+       },
+        report(){
+          if(this.course_detail.is_open){
+            this.$router.push({path:'/danger_report',query:{type:4}})
+          }
 
+        }
     }
   }
 </script>
@@ -61,7 +81,7 @@
           width: 0.88rem;
           height:0.88rem;
           border-radius: 50%;
-          background-image: url('../assets/home_yh_1.png');
+          background-image: url('../assets/icon_paicha.png');
           background-size: cover;
           background-position: center;
         }
@@ -85,7 +105,8 @@
             font-size: 0.24rem;
             >img{
               max-width: 0.3rem;
-              vertical-align: bottom;
+             position: relative;
+             top:0.07rem;
               margin-right: 0.1rem;
             }
           }
@@ -95,6 +116,7 @@
 .del{
   background: #F5F5F5;
   padding: 0.2rem 0;
+  margin-bottom: 1.5rem;
   >div{
     background: #fff;
     padding: 0.2rem 0.2rem;
@@ -114,6 +136,7 @@
     align-items: center;
     justify-content: space-around;
      padding: 0.2rem 0;
+     background: #fff;
     >button{
       border: none;
       height: 0.8rem;

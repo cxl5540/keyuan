@@ -25,6 +25,7 @@ export default {
   color: #333333;
   font-size: 0.28rem;
   margin:0 auto;
+  overflow-x: hidden;
 }
 p{
   margin: 0;

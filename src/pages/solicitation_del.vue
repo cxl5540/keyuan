@@ -119,7 +119,8 @@ export default {
         font-size: 0.24rem;
         >img{
           max-width: 0.3rem;
-          vertical-align: middle;
+          position: relative;
+          top:0.07rem;
           margin-right: 0.1rem;
           color: #666666;
         }

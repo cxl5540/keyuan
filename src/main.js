@@ -12,8 +12,9 @@ fontSize()
 window.onresize = function () {
 fontSize()
 }
-Vue.prototype.baseUrl = "http://192.168.3.43/technical_college/" ;
-  //Vue.prototype.baseUrl = "http://glodon.toommi.com/" ;
+
+ //Vue.prototype.baseUrl = "http://192.168.3.43/technical_college/" ;
+ Vue.prototype.baseUrl = "http://kjxyht.toommi.com/" ;
 function fontSize() {
     var size;
     var winW = $(window).width();
@@ -50,7 +51,12 @@ router.beforeEach((to, from, next) => {
     }
   }
 })
-
+router.beforeEach((to, from, next) => {
+if (to.meta.title) {
+  document.title = to.meta.title
+ }
+next()
+})
  Vue.prototype.gettime=function(sec){
      if(!sec){
          return '-'

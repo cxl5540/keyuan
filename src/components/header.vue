@@ -17,7 +17,7 @@
            <div class="login">
              <div>
                <img src="../assets/icon_login.png" alt="">
-               <span>登录</span>
+               <span>{{info.name}}</span>
              </div>
              <div>
                <img  @click="close" src="../assets/icon_close.png" alt="">
@@ -27,7 +27,7 @@
              <li v-for="i,index in list" :key='index' @click="gopath(i.url)"><span>{{i.name}}</span> <img src="../assets/icon_enter.png"></li>
            </ul>
          </div>
-         <div class="pic">
+         <div class="pic" @click="$router.push('/index')">
            <img src="../assets/img_yhsbxt.png" alt="">
          </div>
 
@@ -41,11 +41,12 @@ export default {
   data () {
     return {
       show:false,
+      info:'',
       list:[{ name:'安全课程学习',url:'/course'},{ name:'知识资源库',url:'/knowledge_list'},{ name:'安全知识讲座',url:'/knowledge_lecture'},{ name:'有奖征文',url:'/solicitation'},{ name:'个人中心',url:'/mine'}]
     }
   },
   created() {
-
+     this.info=JSON.parse(localStorage.getItem('info'))
   },
   mounted() {
 
@@ -70,7 +71,14 @@ export default {
 .header{
   display: flex;
   justify-content: space-between;
-  padding: 0.2rem 0;
+  box-sizing: border-box;
+  padding: 0.2rem 0.2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background: #fff;
   >div:nth-child(2){
     display: flex;
     >.mes{

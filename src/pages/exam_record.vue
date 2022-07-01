@@ -57,7 +57,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/exam_record_list',
-              user_id:1,
+              user_id:localStorage.getItem('uid'),
               is_adopt:this.is_adopt,
               page:this.page,
               limit:10

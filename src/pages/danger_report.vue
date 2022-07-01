@@ -1,37 +1,41 @@
 <template>
-  <div class="meg">
+  <div class="meg"  style="padding-bottom: 1.5rem;">
+     <p v-if="type==2||type==3"><span>{{type==2?'督查上报':'安全举报'}}</span><span @click="$router.push({path: '/report_list',query:{type:type}})">上报记录</span></p>
     <div class=" mes_p">
       <div>
         <div class="main">
           <p>隐患名称<span>*</span> </p>
-          <input type="text" placeholder="请输入隐患名称">
+          <input type="text" v-model="name" placeholder="请输入隐患名称">
         </div>
       </div>
      <div>
        <div class="main">
           <p>隐患位置<span>*</span></p>
-          <input type="text"  placeholder="请输入隐患位置">
+          <input type="text"  v-model="position" placeholder="请输入隐患位置">
         </div>
      </div>
      <div>
        <div  class="main">
           <p>隐患描述<span>*</span></p>
-          <textarea name="" id="" cols="30" rows="10" placeholder="请输入隐患描述"></textarea>
+          <textarea v-model="describe" cols="30" rows="10" placeholder="请输入隐患描述"></textarea>
         </div>
      </div>
     </div>
     <div class="pics">
         <div class="main">
-          <p><span>照相上传</span><img src="../assets/icon_paizhao.png" alt="" @click="handleSubmit"></p>
+          <p><span>照相上传</span><img  v-show="!file_upload" src="../assets/icon_paizhao.png" alt="" @click="handleSubmit"></p>
           <div>
-            <p><img src="../assets/icon_pdf.png" alt=""><span>dashdihsa</span><img src="../assets/icon_guanbi.png" alt=""></p>
-            <p><img src="../assets/icon_pdf.png" alt=""><span>dashdihsa</span><img src="../assets/icon_guanbi.png" alt=""></p>
+            <p v-if="file_upload">
+              <img v-if="ext=='mp4'" src="../assets/icon_shipin.png" alt="">
+              <img v-else="ext!=='mp4'" src="../assets/icon_tupian.png"/>
+              <span>{{file_upload.name}}</span><img src="../assets/icon_guanbi.png" alt="" @click="colse()">
+             </p>
           </div>
         </div>
     </div>
     <div class="btns">
       <button @click="$router.go(-1)">返回</button>
-      <button @click="result()">提交</button>
+      <button @click="submit()">提交</button>
     </div>
     <input type="file"  accept="image/*,video/*"
       style="display:none"
@@ -45,11 +49,16 @@ export default {
   name: '',
   data () {
     return {
-
+      position:'',
+      name:'',
+      describe:'',
+      file_upload:'',
+      type:1,
+      ext:''
     }
   },
   created() {
-
+      this.type=this.$route.query.type;
   },
   mounted() {
 
@@ -59,20 +68,54 @@ export default {
       this.$refs.Input.click()
     },
     changeImage(e) {
-      // 画像对象
       let that = this
       // 文件对象
-      const file = e.target.files[0]
-      //var reader = new FileReader();
-      console.log(file)
-      // reader.onload = function(e){
-      // 	// 文件的 base64
-      //   that.dataURL = e.target.result
-      //   that.dataURL = that.dataURL.replace(/^data:\w+\/\w+;base64,/, '')
-      //   // base64 to base64url
-      //   that.dataURL = Base64.fromUint8Array(Base64.toUint8Array(that.dataURL), true);
-      // }
-      // reader.readAsDataURL(file);
+      const file_upload = e.target.files[0];
+      console.log(file_upload)
+       that.file_upload=file_upload;
+       var index = file_upload.name.lastIndexOf(".");
+       var ext = file_upload.name.substr(index+1);
+       that.ext=ext;
+        that.$refs.Input.value = '';
+    },
+    colse(){
+      this.file_upload='';
+    },
+    submit(){
+      if(!this.file_upload||!this.name||!this.position||!this.describe){
+         this.$toast('请填写完整信息');
+         return false;
+      }
+       this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+       let that = this
+       var formData = new FormData();
+       formData.append("file_upload",that.file_upload);
+       formData.append("action",'HiddenReport/hidden_report_add');
+       formData.append("type",that.type);
+       formData.append("describe",that.describe);
+       formData.append("position",that.position);
+       formData.append("name",that.name);
+       formData.append("user_id",localStorage.getItem('uid'));
+        $.ajax({
+             url:that.baseUrl+'api/Index/apppost',
+             type:'POST',
+             data:formData,
+             cache: false,
+             contentType: false,    //不可缺
+             processData: false,    //不可缺
+             mimeType:"multipart/form-data",
+             success:function(res){
+                that.$toast.clear();
+               var res=JSON.parse(res)
+               if(res.code==200){
+                 that.$toast(res.msg);
+                 that.$router.push('/report_list')
+               }else{
+                that.$toast(res.msg);
+               }
+               console.log(res)
+             } ,
+           })
     }
   }
 }
@@ -84,6 +127,28 @@ export default {
 .main{
   >p{
    // margin: 0.2rem 0;
+  }
+}
+.meg{
+  >p{
+    display: flex;
+    justify-content: space-between;
+    background: rgba(109,198,249,0.1);
+    padding: 0.2rem;
+    >span:nth-child(1){
+      font-weight: bold;
+    }
+    >span:nth-child(2){
+      display: inline-block;
+      width: 1.46rem;
+      height: 0.54rem;
+      background: #4CADFF;
+      border-radius:2px;
+      font-size: 12px;
+      text-align: center;
+      line-height: 0.54rem;
+      color: #fff;
+    }
   }
 }
 .mes_p{
@@ -165,6 +230,7 @@ export default {
     align-items: center;
     justify-content: space-around;
      padding: 0.2rem 0;
+     background: #fff;
     >button{
       border: none;
       height: 0.8rem;

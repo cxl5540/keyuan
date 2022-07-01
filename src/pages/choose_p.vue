@@ -1,30 +1,53 @@
 <template>
   <div class="main">
-  <p>已选：安全科室 - 安全部 - 张三</p>
-  <div class="search">
+  <p><b>组织架构</b></p>
+<!--  <div class="search">
       <div class="rt">
          <input type="" v-model="key" placeholder="请输入拼音首字母/关键字查询"/>
          <img src="../assets/sousuo_hui.png" alt="">
       </div>
-  </div>
-    <van-radio-group v-model="radio" checked-color="#FFAF24">
-        <van-collapse v-model="activeNames" >
-          <van-collapse-item title="标题1" name="1">
-              <van-collapse v-model="activeNames1">
-                <van-collapse-item title="标题4" name="4">
-                  <p clickable @click="radio = '1'"><span> d888 </span> <van-radio name="1"  /></p>
-                </van-collapse-item>
-                <van-collapse-item title="标题5" name="5">
-                  <p clickable @click="radio = '2'"><span> d888 </span>  <van-radio name="2" /></p>
-                </van-collapse-item>
-                <van-collapse-item title="标题6" name="6">
-                  <p><span> d888 </span></p>
+  </div> -->
+
+
+        <!-- <van-collapse v-model="activeNames" v-for="i,index in list" :key='index'  @change='change(i)'>
+          <van-collapse-item :title="i.name" :name="i.id">
+              <van-collapse v-model="activeNames1" v-for="i_2,in_2 in i.children" :key='i_2.id'  v-if="i.children" @change='change(i_2)'>
+                <van-collapse-item :title="i_2.name" :name="i_2.id"  v-if="i_2.children">
+                  <van-collapse v-model="activeNames2" v-for="i_3,in_3 in i_2.children" :key='i_3.id'  v-if="i_2.children"  @change='change(i_3)'>
+                    <van-collapse-item :title="i_3.name" :name="i_3.id" >
+                      <p v-for="i_4 in i_3.children" v-if="i_3.children" @change='change(i_4)'><span> {{i_4.name}} </span></p>
+                    </van-collapse-item>
+                  </van-collapse>
                 </van-collapse-item>
               </van-collapse>
           </van-collapse-item>
+        </van-collapse> -->
+
+        <van-collapse v-model="activeNames" v-for="i,index in list" :key='index' >
+          <van-collapse-item  :name="i.id">
+             <template #title>
+                  <div ><span @click.stop="change(i.id)">{{i.name}}</span> </div>
+              </template>
+             <van-collapse v-model="activeNames1" v-for="i_2,in_2 in i.children" :key='i_2.id'  v-if="i.children">
+               <van-collapse-item  :name="i_2.id"  v-if="i_2.children">
+                 <template #title>
+                      <div><span @click.stop="change(i_2.id)">{{i_2.name}}</span> </div>
+                  </template>
+                  <van-collapse v-model="activeNames2" v-for="i_3,in_3 in i_2.children" :key='i_3.id'  v-if="i_2.children" >
+                    <van-collapse-item  :name="i_3.id" style="background: rgba(255,175,36,0.1) ;" >
+                      <template #title>
+                           <div><span @click.stop="change(i_3.id)">{{i_3.name}}</span> </div>
+                       </template>
+                      <p v-for="i_4 in i_3.children" v-if="i_3.children"><span @click.stop="change(i_4.id)"> {{i_4.name}} </span></p>
+                    </van-collapse-item>
+                  </van-collapse>
+               </van-collapse-item>
+             </van-collapse>
+
+          </van-collapse-item>
         </van-collapse>
-    </van-radio-group>
-    <button>确定</button>
+
+   <!-- <button>确定</button> -->
   </div>
 </template>
 
@@ -34,19 +57,39 @@ export default {
   data () {
     return {
       activeNames: ['1'],
-      activeNames1:['4'],
+      activeNames1:['1'],
+      activeNames2:['1'],
       radio:'1',
-      key:''
+      key:'',
+      list: [],
+      hidden_id:''
     }
   },
   created() {
-
+    this.hidden_id=this.$route.query.hidden_id
+    this.getdata()
   },
   mounted() {
 
   },
   methods:{
-
+    getdata(){
+      //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'HiddenReport/organization_list',
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.list=res.data.menu_list;
+                 // _this.$toast.clear();
+        		}
+        });
+    },
+    change(id){
+      this.$router.push({path:'/choose_per',query:{id:id,hidden_id:this.hidden_id}})
+    }
   }
 }
 </script>
@@ -106,17 +149,24 @@ export default {
      background: rgba(109,198,249,0.1)
   }
 }
+
 /deep/.van-collapse-item__content{
   .van-cell--clickable{
-    background: rgba(255,132,127,0.1) !important;
+    background: rgba(255,132,127,0.1) ;
   }
 }
 /deep/.van-collapse-item__content>p{
-   background: rgba(255,175,36,0.1);
+   background:rgba(118,210,180,0.2);
    padding: 0.2rem;
    width: 100%;
    color: #333;
    display: flex;
    justify-content: space-between;
+}
+[class*=van-hairline]::after{
+  border: none;
+}
+/deep/.van-cell--clickable{
+  text-decoration: underline;
 }
 </style>

@@ -8,7 +8,7 @@
                 <img src="../assets/icon_login.png" alt="">
                 <div>
                     <p>张三</p>
-                    <p>某某某某某学院 | 某某科室 | 某某部门</p>
+                    <p>{{info.department}}</p>
                 </div>
               </div>
               <div @click="goindex()">
@@ -50,11 +50,13 @@ export default {
   name: '',
   data () {
     return {
+        info:'',
         schedule_info:{},
         list:[{ name:'安全课程学习',sty:'#FFAF24',url:'/course'},{ name:'学时学分记录',sty:'#76D2B4',url:'/credit_record'},{ name:'考试记录',sty:'#6DC6F9',url:'/exam_record'},{ name:'征文报名记录',sty:'#FF847F',url:'/regist_record'}]
     }
   },
   created() {
+    this.info=JSON.parse(localStorage.getItem('info'))
     this.getdata()
   },
   mounted() {
@@ -66,7 +68,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/personal',
-              user_id:1,
+              user_id:localStorage.getItem('uid'),
         }
         let _this=this;
         $.post(url,data,function(res){

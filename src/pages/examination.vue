@@ -67,7 +67,7 @@ export default {
          this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
          var url=this.baseUrl+'api/Index/apppost';
          var data={
-             user_id:1,
+             user_id:localStorage.getItem('uid'),
              exam_id:1,
              action:'Exam/start_exam'
            }
@@ -182,7 +182,7 @@ export default {
       this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
       var url=this.baseUrl+'api/Index/apppost';
       var data={
-         user_id:1,
+         user_id:localStorage.getItem('uid'),
          exam_id:1,
          exam_num:this.topic_list[0].exam_num,
          user_answer:this.str_answer,

@@ -1,32 +1,35 @@
 <template>
   <div class="page">
     <ul>
-      <li class="activ">我的上报</li>
-      <li>我的指派</li>
+      <li :class="report_and_assign==1?'activ':'' " @click="choose_type(1)">我的上报</li>
+      <li  :class="report_and_assign==2?'activ':'' " @click="choose_type(2)">我的指派</li>
     </ul>
       <div class="main">
           <div class="search">
               <div class="lt" @click="show = true">{{type}}<img src="../assets/icon_sxuan.png" alt=""></div>
               <div class="rt">
                  <input type="" v-model="key" placeholder="请输入关键词"/>
-                 <img src="../assets/sousuo_lv.png" alt="">
+                 <img src="../assets/sousuo_lv.png" alt="" @click="search">
               </div>
           </div>
+          <van-action-sheet v-model="show" :actions="actions" @select="onSelect" />
           <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
             <van-list
               v-model="loading"
               :finished="finished"
-              finished-text="没有更多了"
+              finished-text="没有更多数据"
               @load="onLoad"
             >
              <div class="list">
-                <div v-for="i,index in list" :key='index' @click="$router.push('/report_deal')">
+                <div v-for="i,index in list" :key='index' @click="detail(i.id)">
                     <div class="top">
-                        <p><span>{{i.n}}</span><span>待处理</span></p>
-                        <span>隐患位置：{{i.n}}</span>
+                        <p><span>{{i.type==4?'(专项上报)':''}} {{getstr(i.name,12)}}</span>
+                        <span :style="{background:i.status==1?'#DCDCDC':i.status==2?'#FFE3CA':i.status==3?'#D8F2CE':i.status==4?'#CEEFDD':'#D8BFD8'}">{{i.status==1?'待处理':i.status==2?'处理中':i.status==3?'待完成':i.status==4?'已完成':'已驳回'}}</span>
+                        </p>
+                        <span>隐患位置：{{i.position}}</span>
                     </div>
                     <div class="bot">
-                      <p><span><img src="../assets/icon_ren.png"/>上报人：嘻嘻嘻</span> <span>2022.04.19 14:53</span></p>
+                      <p><span><img src="../assets/icon_ren.png"/>上报人：{{i.user_name}}</span> <span>{{i.create_time}}</span></p>
                     </div>
                 </div>
              </div>
@@ -43,14 +46,19 @@ export default {
   name: '',
   data () {
     return {
+      status:'',
       type:'全部',
       show:false,
-      actions: [{ name: '全部' }, { name: '国家安全' }, { name: '消防交通' }],
+      actions: [{ name: '全部',status:'' }, { name: '待处理',status:1 }, { name: '处理中' ,status:2}, { name: '待完成',status:3}, { name: '已完成',status:4}],
       key: '',
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list: [],
       loading: false,
-      finished: true,
+      finished: false,
       refreshing: false,
+      page:1,
+      pages:'',
+      type_r:'',
+      report_and_assign:1
     }
   },
   created() {
@@ -60,15 +68,72 @@ export default {
 
   },
   methods:{
+    detail(id){
+      if(this.report_and_assign==1){
+        this.$router.push({path:'/report_deal',query:{id:id}} )
+      }else{
+        this.$router.push({path:'/report_deal1',query:{id:id}} )
+      }
+
+    },
+    getlist(){
+      //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'HiddenReport/hidden_report_list',
+              key:this.key,
+              page:this.page,
+              limit:10,
+              user_id:localStorage.getItem('uid'),
+              type:this.type_r,
+              status:this.status,
+              report_and_assign:this.report_and_assign
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.loading = false;
+                   _this.page++
+                _this.pages=res.data.pages;
+                var li=res.data.hidden_list;
+                for(var i=0;i<li.length;i++){
+                    _this.list.push(li[i]);
+                }
+                if (li.length<10) {
+                  _this.finished = true;
+                 }
+        		}
+        });
+    },
+    choose_type(report_and_assign){
+      this.report_and_assign=report_and_assign;
+      this.onRefresh()
+    },
     onSelect(item){
       this.show = false;
       this.type=item.name;
+      this.status=item.status;
     },
+    search(){  //搜索
+       this.page=1;
+       this.refreshing = false;
+        this.loading = true;
+        this.finished=false;
+       this.list=[];
+       this.getlist()
+     },
     onLoad(){
-
+      setTimeout(() => {
+         this.getlist()
+      },1000);
     },
     onRefresh(){
-
+      this.page=1;
+      this.refreshing = false;
+      this.loading = true;
+      this.finished=false;
+      this.list=[];
+      this.getlist();
     }
   }
 }
@@ -191,7 +256,8 @@ export default {
              >img{
                width: 0.32rem;
                height: 0.32rem;
-               vertical-align: middle;
+               position: relative;
+               top: 0.05rem;
              }
            }
             >span:nth-child(2){

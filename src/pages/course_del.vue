@@ -76,7 +76,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/course_learn',
-              user_id:1,
+              user_id:localStorage.getItem('uid'),
               schedule_id:this.schedule_id,
               course_id:this.course_id,
               type:this.type
@@ -110,8 +110,8 @@ export default {
       background: #FFAF24;
       border-radius: 3px;
       width: 0.6rem;
-      line-height: 0.32rem;
-      height: 0.32rem;
+      //line-height: 0.32rem;
+      //height: 0.32rem;
       font-size: 12px;
       text-align: center;
       margin-right: 0.1rem;

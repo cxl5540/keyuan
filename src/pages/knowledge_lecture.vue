@@ -230,9 +230,9 @@ export default {
                >span{
                  display: inline-block;
                  text-align: center;
-                 line-height: 0.36rem;
-                 width: 0.96rem;
-                 height: 0.36rem;
+                // line-height: 0.36rem;
+                 width: 0.9rem;
+               //  height: 0.36rem;
                  background:#FFAF24;
                  border-radius:4px;
                  color: #fff;
@@ -243,7 +243,8 @@ export default {
             font-size: 0.24rem;
             >img{
               max-width: 0.3rem;
-              vertical-align: bottom;
+             position: relative;
+             top:0.07rem;
               margin-right: 0.1rem;
             }
           }

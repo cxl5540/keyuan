@@ -1,7 +1,7 @@
 <template>
   <div class="page">
         <div class="title">
-          <span>督查上报记录</span>
+          <span>{{type_r==2?'督查':'举报'}}上报记录</span>
           <span @click="$router.go(-1)">返回></span>
         </div>
       <div class="main">
@@ -9,17 +9,17 @@
             <van-list
               v-model="loading"
               :finished="finished"
-              finished-text="没有更多了"
+              finished-text="没有更多数据"
               @load="onLoad"
             >
-             <div class="list" @click="$router.push('/report_del')">
-                <div v-for="i,index in list" :key='index'>
+             <div class="list">
+                <div v-for="i,index in list" :key='index'  @click="$router.push({path:'/report_del',query:{id:i.id}} )">
                     <div class="top">
-                        <p><span>{{i.n}}</span></p>
-                        <span>隐患位置：{{i.n}}</span>
+                        <p><span>{{i.name}}</span></p>
+                        <span>隐患位置：{{i.position}}</span>
                     </div>
                     <div class="bot">
-                      <p><span><img src="../assets/icon_ren.png"/>上报人：嘻嘻嘻</span> <span>2022.04.19 14:53</span></p>
+                      <p><span><img src="../assets/icon_ren.png"/>上报人：{{i.user_name}}</span> <span>{{i.create_time}}</span></p>
                     </div>
                 </div>
              </div>
@@ -37,16 +37,19 @@ export default {
     return {
       type:'全部',
       show:false,
-      actions: [{ name: '全部' }, { name: '国家安全' }, { name: '消防交通' }],
+      actions: [{ name: '全部' }, { name: '待处理' }, { name: '处理中' }, { name: '待完成' }, { name: '已完成' }],
       key: '',
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list: [],
       loading: false,
-      finished: true,
+      finished: false,
       refreshing: false,
+      page:1,
+      pages:'',
+      type_r:''
     }
   },
   created() {
-
+    this.type_r=this.$route.query.type
   },
   mounted() {
 
@@ -56,12 +59,56 @@ export default {
       this.show = false;
       this.type=item.name;
     },
-    onLoad(){
-
+    getlist(){
+      //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'HiddenReport/hidden_report_list',
+              key:this.key,
+              page:this.page,
+              limit:10,
+              user_id:localStorage.getItem('uid'),
+              type:this.type_r,
+              status:'',
+              report_and_assign:''
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.loading = false;
+                   _this.page++
+                _this.pages=res.data.pages;
+                var li=res.data.hidden_list;
+                for(var i=0;i<li.length;i++){
+                    _this.list.push(li[i]);
+                }
+                if (li.length<10) {
+                  _this.finished = true;
+                 }
+        		}
+        });
     },
-    onRefresh(){
-
-    }
+    search(){  //搜索
+      this.page=1;
+      this.refreshing = false;
+       this.loading = true;
+       this.finished=false;
+      this.list=[];
+      this.getlist()
+    },
+   onLoad(){
+     setTimeout(() => {
+        this.getlist()
+     },1000);
+   },
+   onRefresh(){
+     this.page=1;
+     this.refreshing = false;
+     this.loading = true;
+     this.finished=false;
+     this.list=[];
+     this.getlist();
+   }
   }
 }
 </script>

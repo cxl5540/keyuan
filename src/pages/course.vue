@@ -62,7 +62,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/schedule_list',
-              user_id:1,
+              user_id:localStorage.getItem('uid'),
         }
         let _this=this;
         $.post(url,data,function(res){

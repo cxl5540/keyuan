@@ -46,7 +46,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/credit_record_list',
-              user_id:1,
+              user_id:localStorage.getItem('uid'),
               type:this.type
         }
         let _this=this;

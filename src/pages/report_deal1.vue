@@ -40,29 +40,34 @@
           <div v-for="i,index in hidden_assign_list" :key='index'>
             <p><span>{{i.type==1?'已分派':i.type==2?'待完成':i.type==3?'已完成':'已驳回'}}</span><span>{{i.create_time}}</span> </p>
             <p>{{i.assign_name}}</p>
-            <div>{{i.describe}}</div>
+            <div>
+              <p>{{i.describe}}</p>
+              <a v-if="i.file_path" :href="baseUrl+i.file_path" target="_blank">点击查看附件附件</a>
+            </div>
+
             <img src="../assets/icon_lcd.png" alt="">
           </div>
-          <!-- <p @click="$router.push('/choose_p')">指派任务给他人</p> -->
+          <p @click="$router.push({path:'/choose_p',query:{hidden_id:id}} )" v-show="hidden_detail.status==2">指派任务给他人</p>
         </div>
 
     </div>
     <div class="btns">
       <button @click="$router.go(-1)">返回</button>
-      <button @click="report_del()" :style="{background:hidden_detail.status==1?'':'#ccc'}">撤回</button>
-      <button @click="submit" :style="{background:hidden_detail.status==1?'#FFAF24':'#ccc'}">修改</button>
+      <button  @click="back_report()" :style="{background:hidden_detail.status==2?'':'#ccc'}">驳回</button>
+      <button @click="submit" :style="{background:hidden_detail.status==2||hidden_detail.status==3?'':'#ccc'}">任务完结</button>
     </div>
-  <!--  <van-popup v-model="show">
+    <van-popup v-model="show">
         <div class="content">
              <p>驳回原因</p>
              <div>
+                <textarea placeholder="请输入驳回原因" v-model="describe_c" style="width: 100%;border: none;" cols="30" rows="20"></textarea>
              </div>
              <div class="btns">
                <button @click="show=false">取消</button>
-               <button  @click="show=false">确定</button>
+               <button  @click="submit_back()">确定</button>
              </div>
         </div>
-    </van-popup> -->
+    </van-popup>
   </div>
 </template>
 
@@ -71,10 +76,12 @@ export default {
   name: '',
   data () {
     return {
+      show:false,
       id:'',
       hidden_detail:'',
       ext:'',
-      hidden_assign_list:''
+      hidden_assign_list:'',
+      describe_c:''
     }
   },
   created() {
@@ -85,6 +92,33 @@ export default {
 
   },
   methods:{
+    back_report(){ //驳回
+      if(this.hidden_detail.status==2){
+        this.show=true;
+      }
+    },
+    back_submit(){//驳回
+      this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'HiddenReport/reject_hidden_report',
+              hidden_id:this.id,
+              assign_id:localStorage.getItem('uid'),
+              describe:this.describe_c
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.$toast(res.msg);
+                  _this.show=false;
+                  _this.$toast.clear();
+                  _this.$router.go(-1)
+        		}
+        });
+    },
+    submit_back(){//驳回
+      this.back_submit()
+    },
     getdata(){
       this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
       var url=this.baseUrl+'api/Index/apppost';
@@ -104,34 +138,8 @@ export default {
         });
     },
     submit(){
-      if(this.hidden_detail.status==1){
-        this.$router.push({path:'/danger_report1',query:{id:this.hidden_detail.id}})
-      }
-    },
-    report_del(){
-      if(this.hidden_detail.status==1){
-        this.$dialog.confirm({
-          title: '提示',
-          message: '是否撤回此上报？',
-        })
-          .then(() => {
-            this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
-            var url=this.baseUrl+'api/Index/apppost';
-            var data={
-                    action:'HiddenReport/hidden_report_del',
-                    hidden_id:this.id,
-              }
-              let _this=this;
-              $.post(url,data,function(res){
-                    _this.$toast(res.msg)
-              			 if(res.code==200){
-                        _this.$router.go(-1)
-              		  }
-              });
-          })
-          .catch(() => {
-            // on cancel
-          });
+      if(this.hidden_detail.status==2||this.hidden_detail.status==3){
+        this.$router.push({path:'/deal',query:{id:this.hidden_detail.id}})
       }
     },
     result(){

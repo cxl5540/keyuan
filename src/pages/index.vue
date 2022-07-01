@@ -3,7 +3,7 @@
       <div class="login">
         <div>
           <img src="../assets/icon_login.png" alt="">
-          <span>张三 | <span style="color: #117EBC;" @click="esc()">退登</span></span>
+          <span>{{info.name}}| <span style="color: #117EBC;" @click="esc()">退登</span></span>
         </div>
         <div class="mes" @click="$router.push('/message_report')">
            <img src="../assets/icon_tongzhi.png" alt="">
@@ -14,15 +14,15 @@
         <div class="c_t">
           <h3>隐患上报与管理</h3>
           <div>
-            <div @click="$router.push('/danger_report')"><span>隐患上报</span></div>
+            <div @click="$router.push({path:'/danger_report',query:{type:1}} )"><span>隐患上报</span></div>
             <div @click="$router.push('/my_report')"><span>隐患管理</span></div>
           </div>
         </div>
         <div class="c_t c_2">
           <h3>督查上报与安全举报</h3>
           <div>
-            <div  @click="$router.push('/danger_report1')"><span>督查上报</span></div>
-            <div @click="$router.push('/danger_report1')"><span>安全举报</span></div>
+            <div  @click="$router.push({path:'/danger_report',query:{type:2}})"><span>督查上报</span></div>
+            <div @click="$router.push({path:'/danger_report',query:{type:3}})"><span>安全举报</span></div>
           </div>
         </div>
         <div class="c_t c_3">
@@ -31,7 +31,7 @@
             <div><span>专项排查活动</span></div>
           </div>
         </div>
-       <img src="../assets/img_aqzspt.png" alt="">
+       <img src="../assets/img_aqzspt.png" alt="" @click="$router.push('/text')">
       </div>
   </div>
 </template>
@@ -41,11 +41,11 @@ export default {
   name: '',
   data () {
     return {
-
+      info:'',
     }
   },
   created() {
-
+     this.info=JSON.parse(localStorage.getItem('info'))
   },
   mounted() {
 

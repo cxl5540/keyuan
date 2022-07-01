@@ -2,10 +2,11 @@
   <div>
     <div class="main">
       <Header></Header>
-      <div @click="$router.push('/before_exam')">
+      <div class="banner" @click="toexam()" style="margin-top: 1.2rem;" >
         <img src="../assets/img_ksrk_1(1).png" alt="">
+         <span :style="{background:schedule_info.credit_percentage!==100?'#DCDCDC':''}">{{schedule_info.credit_percentage==100?'已开启':'未开启'}}</span>
       </div>
-      <div class="mine">
+      <div class="mine" >
           <div class="title">
             <span>2022年学习任务</span>
             <span @click="$router.push('/mine')">个人中心></span>
@@ -159,7 +160,7 @@ export default {
       var url=this.baseUrl+'api/Index/apppost';
       var data={
               action:'SafeKnowledge/index',
-             user_id:1,
+             user_id:localStorage.getItem('uid'),
              type:this.type
         }
         let _this=this;
@@ -173,6 +174,13 @@ export default {
               _this.prize_essay_list=res.data.prize_essay_list;
         			 }
           });
+    },
+    toexam(){  //考试
+    if(this.schedule_info.credit_percentage!==100){
+      this.$toast('您的学分未达到要求，暂不能考试');
+      return false;
+    }
+      this.$router.push({path:'/before_exam',query:{exam_id:this.schedule_info.id}} )
     },
     choose_type(type){
       this.type=type;
@@ -220,6 +228,22 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 
 <style scoped lang="less">
+.banner{
+  position: relative;
+  >span{
+    display: inline-block;
+    width: 1.2rem;
+   // height: 0.44rem;
+    background: #FF847F;
+    color: #FFffff;
+   // line-height: 0.44rem;
+    text-align: center;
+    border-radius: 0.22rem 0px 0px 0.22rem;
+    position:absolute;
+    right: 0;
+    top: 0.2rem;
+  }
+}
 .mine{
   >p{
     text-align: left;
@@ -314,8 +338,8 @@ export default {
             background: #FFAF24;
             border-radius: 3px;
             width: 0.6rem;
-            line-height: 0.32rem;
-            height: 0.32rem;
+           // line-height: 0.32rem;
+            //height: 0.32rem;
             font-size:12px;
             text-align: center;
             margin-right: 0.1rem;
@@ -414,9 +438,9 @@ export default {
                >span{
                  display: inline-block;
                  text-align: center;
-                 line-height: 0.36rem;
-                 width: 0.96rem;
-                 height: 0.36rem;
+                // line-height: 0.36rem;
+                 width: 0.9rem;
+                 //height: 0.36rem;
                  background:#FFAF24;
                  border-radius:4px;
                  color: #fff;
@@ -427,7 +451,8 @@ export default {
             font-size: 0.24rem;
             >img{
               max-width: 0.3rem;
-              vertical-align: bottom;
+             position: relative;
+             top:0.07rem;
               margin-right: 0.1rem;
             }
           }
@@ -480,7 +505,8 @@ export default {
         font-size: 0.24rem;
         >img{
           max-width: 0.3rem;
-          vertical-align: bottom;
+         position: relative;
+         top:0.07rem;
           margin-right: 0.1rem;
           color: #666666;
         }
@@ -496,9 +522,9 @@ export default {
           display: inline-block;
           background: #FFAF24;
           border-radius: 3px;
-          width: 1.1rem;
-          line-height: 0.4rem;
-          height: 0.4rem;
+          width: 1rem;
+          //line-height: 0.4rem;
+         // height: 0.4rem;
           font-size: 12px;
 		  text-align: center;
           // margin-righ12px;12px;em;
@@ -510,7 +536,8 @@ export default {
         font-size: 0.24rem;
         >img{
           max-width: 0.3rem;
-          vertical-align: bottom;
+         position: relative;
+         top:0.07rem;
           margin-right: 0.1rem;
           color: #666666;
         }

@@ -7,26 +7,26 @@
       <div class="search">
           <div class="rt">
              <input type="" v-model="key" placeholder="请输入关键词"/>
-             <img src="../assets/sousuo_zi.png" alt="">
+             <img src="../assets/sousuo_zi.png" alt="" @click="search">
           </div>
       </div>
       <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
         <van-list
           v-model="loading"
           :finished="finished"
-          finished-text="没有更多了"
+          finished-text="没有更多数据"
           @load="onLoad"
         >
-         <div class="list" @click="todetail()">
-            <div>
+         <div class="list">
+            <div v-for="i,index in list" :key='index'  @click="todetail(i.id)">
                <div class="top">
                  <div></div>
                  <div>
-                   <p>专项排查活动名称</p>
-                   <p><img src="../assets/icon_time.png" alt=""><span>活动时间：2022.04.20 14:00~17:00</span></p>
+                   <p>{{i.name}}</p>
+                   <p><img src="../assets/icon_time.png" alt=""><span>活动时间：{{i.activity_time}}</span></p>
                  </div>
                </div>
-               <div class="bot">知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字知识讲座内容介绍文字...</div>
+               <div class="bot">{{getstr(i.brief,100) }}</div>
             </div>
          </div>
         </van-list>
@@ -41,10 +41,12 @@ export default {
     return {
       show:false,
       key: '',
-      list: [{n:'2021年安全课程学习',d:'一段文件介绍安全课程一段文件介...'}],
+      list: [],
       loading: false,
-      finished: true,
+      finished: false,
       refreshing: false,
+      page:1,
+      pages:'',
     }
   },
   created() {
@@ -53,14 +55,54 @@ export default {
 
   },
   methods:{
-    todetail(){
-      this.$router.push('/special_activ_del')
+    getlist(){
+      //this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
+      var url=this.baseUrl+'api/Index/apppost';
+      var data={
+              action:'HiddenReport/special_screening_list',
+              key:this.key,
+              page:this.page,
+              limit:10
+        }
+        let _this=this;
+        $.post(url,data,function(res){
+        			 if(res.code==200){
+                  _this.loading = false;
+                   _this.page++
+                _this.pages=res.data.pages;
+                var li=res.data.screening_list;
+                for(var i=0;i<li.length;i++){
+                    _this.list.push(li[i]);
+                }
+                if (li.length<10) {
+                  _this.finished = true;
+                 }
+        		}
+          });
     },
+    todetail(id){
+      this.$router.push({path:'/special_activ_del',query:{id:id}} )
+    },
+    search(){  //搜索
+       this.page=1;
+       this.refreshing = false;
+        this.loading = true;
+        this.finished=false;
+       this.list=[];
+       this.getlist()
+     },
     onLoad(){
-
+      setTimeout(() => {
+         this.getlist()
+      },1000);
     },
     onRefresh(){
-
+      this.page=1;
+      this.refreshing = false;
+       this.loading = true;
+       this.finished=false;
+      this.list=[];
+      this.getlist();
     }
   }
 }
@@ -123,7 +165,7 @@ export default {
       background: #FFffff;
       box-sizing: border-box;
       width: 7.1rem;
-      margin: auto;
+      margin:0.2rem auto;
       padding: 0.2rem;
       border-radius: 4px;
       >.top{
@@ -134,7 +176,7 @@ export default {
           width: 0.88rem;
           height:0.88rem;
           border-radius: 50%;
-          background-image: url('../assets/home_yh_1.png');
+          background-image: url('../assets/icon_paicha.png');
           background-size: cover;
           background-position: center;
         }
@@ -158,8 +200,9 @@ export default {
             font-size: 0.24rem;
             >img{
               max-width: 0.3rem;
-              vertical-align: bottom;
               margin-right: 0.1rem;
+              position: relative;
+              top:0.07rem;
             }
           }
         }

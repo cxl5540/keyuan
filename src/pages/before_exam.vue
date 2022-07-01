@@ -49,7 +49,7 @@ export default {
         this.$toast.loading({message: '加载中...',forbidClick: true,});//显示loading
         var url=this.baseUrl+'api/Index/apppost';
         var data={
-            exam_id:1,
+            exam_id:this.$route.query.exam_id,
             action:'Exam/exam_info'
           }
           let _this=this;
@@ -61,6 +61,10 @@ export default {
             });
     },
     start(){
+      if(this.info.is_config==1){
+        this.$toast('考题还未配置完成，请稍后再试');
+        return false;
+      }
       this.$router.push({path:'/examination'})
     }
   }

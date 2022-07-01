@@ -16,7 +16,7 @@
         <van-list
           v-model="loading"
           :finished="finished"
-          finished-text="没有更多了"
+          finished-text="没有更数据"
           @load="onLoad"
         >
           <div class="list">
@@ -43,7 +43,7 @@ export default {
     return {
       type:'全部',
       show:false,
-      actions: [{ name: '全部' }, { name: '国家安全' }, { name: '消防交通' }],
+      //actions: [{ name: '全部' }, { name: '国家安全' }, { name: '消防交通' }],
       key: '',
       list: [],
       loading: false,
@@ -177,10 +177,10 @@ export default {
         top: 0.2rem;
         left: 0.2rem;
         display: inline-block;
-        width: 1.1rem;
-        height: 0.48rem;
+        width: 1rem;
+        //height: 0.48rem;
         text-align: center;
-        line-height: 0.48rem;
+        //line-height: 0.48rem;
         text-align: center;
         background: #CCCCCC;
         color: #FFffff;
@@ -197,7 +197,8 @@ export default {
         font-size: 0.24rem;
         >img{
           max-width: 0.3rem;
-          vertical-align: bottom;
+          position: relative;
+          top:0.07rem;
           margin-right: 0.1rem;
           color: #666666;
         }
